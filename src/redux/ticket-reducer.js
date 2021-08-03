@@ -25,7 +25,7 @@ let initialState = {
             { name: "Оптимальный", value: false },
         ]
     },
-}
+};
 
 const ticketReducer = (state = initialState, action) => {
     switch (action.type) {
@@ -313,5 +313,40 @@ export const onClickTabs = (name) => ({ type: CLICK_TABS, name });
 export const sortTickets = () => ({ type: SORT_TICKETS });
 export const aggregateTickets = (tickets) => ({ type: GET_TICKETS, tickets });
 export const showMoreTickets = () => ({ type: SHOW_MORE_TICKETS });
+export const getTickets = (props) => {
+    return (dispatch) => {
+        initSearchTickets(props);
+                
+        async function initSearchTickets(props) {
+            let searchResponse = await fetch("https://front-test.beta.aviasales.ru/search");
+
+            if (searchResponse.status !== 200) {
+                await initSearchTickets();
+            }
+            else {
+                let searchData = await searchResponse.json();
+                await getChunkOfTickets(searchData, props);
+            }
+        }
+    
+        async function getChunkOfTickets(searchData, props) {
+            let ticketsResponse = await fetch("https://front-test.beta.aviasales.ru/tickets?searchId=" + searchData.searchId);
+        
+            if (ticketsResponse.status !== 200) {
+                await getChunkOfTickets(searchData, props);
+            }
+            else {
+                let ticketsData = await ticketsResponse.json();
+                dispatch(aggregateTickets(ticketsData.tickets));
+                if (ticketsData.stop === false) {
+                    await getChunkOfTickets(searchData, props);
+                }
+                else {
+                    dispatch(sortTickets());
+                }
+            }
+        }
+    }
+}
 
 export default ticketReducer;
