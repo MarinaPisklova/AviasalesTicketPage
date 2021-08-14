@@ -1,5 +1,6 @@
 import { connect } from "react-redux"
-import { onChangeCheckbox, aggregateTickets, sortTickets } from "../../redux/ticket-reducer";
+import { aggregateTickets, sortTickets, onChangeCheckbox } from "../../redux/ticket-reducer";
+
 import Filter from './Filter';
 
 let mapStateToProps = (state) => {

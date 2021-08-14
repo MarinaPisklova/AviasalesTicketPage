@@ -1,8 +1,8 @@
 const SORT_TICKETS = "SORT_TICKETS";
-const CHANGE_CHECKBOX = "CHANGE_CHECKBOX";
-const CLICK_TABS = "CLICK_TABS";
 const GET_TICKETS = "GET_TICKETS";
 const SHOW_MORE_TICKETS = "SHOW_MORE_TICKETS";
+const CHANGE_CHECKBOX = "CHANGE_CHECKBOX";
+const CLICK_TABS = "CLICK_TABS";
 
 let initialState = {
     tickets: [],
@@ -29,114 +29,6 @@ let initialState = {
 
 const ticketReducer = (state = initialState, action) => {
     switch (action.type) {
-        case CHANGE_CHECKBOX: {
-            let newFilters = [];
-            if (action.name === "Все") {
-                let newValue = !state.sortValues.Filters[0].value;
-                newFilters = state.sortValues.Filters.map(elem => {
-                    return {
-                        name: elem.name,
-                        value: newValue,
-                        number: elem.number,
-                    }
-                });
-            }
-            else {
-                let isAllChoice = true;
-                newFilters = state.sortValues.Filters.map(elem => {
-                    let newValue = action.name === elem.name ? !elem.value : elem.value;
-                    if (elem.name !== "Все") {
-                        if (newValue === false)
-                            isAllChoice = false;
-                    }
-                    return {
-                        name: elem.name,
-                        value: newValue,
-                        number: elem.number,
-                    }
-                });
-                newFilters[0].value = isAllChoice;
-            }
-
-            let newState = {
-                ...state,
-                ...state.addTicketsButton,
-                tickets: state.tickets.map(ticket => {
-                    return {
-                        ...ticket,
-                        segments: ticket.segments.map(seg => {
-                            return {
-                                ...seg,
-                                stops: [...seg.stops],
-                            }
-                        })
-                    }
-                }),
-                sortedTickets: state.sortedTickets.map(ticket => {
-                    return {
-                        ...ticket,
-                        segments: ticket.segments.map(seg => {
-                            return {
-                                ...seg,
-                                stops: [...seg.stops],
-                            }
-                        })
-                    }
-                }),
-                sortValues: {
-                    Filters: [...newFilters],
-                    Tabs: [...state.sortValues.Tabs],
-                }
-            }
-
-            return newState;
-        }
-        case CLICK_TABS: {
-            let newState = {
-                ...state,
-                ...state.addTicketsButton,
-                tickets: state.tickets.map(item => {
-                    return {
-                        ...item,
-                        segments: item.segments.map(seg => {
-                            return {
-                                ...seg,
-                                stops: seg.stops.slice(),
-                            }
-                        })
-                    }
-                }),
-                sortedTickets: state.sortedTickets.map(item => {
-                    return {
-                        ...item,
-                        segments: item.segments.map(seg => {
-                            return {
-                                ...seg,
-                                stops: seg.stops.slice(),
-                            }
-                        })
-                    }
-                }),
-                sortValues: {
-                    Filters: [...state.sortValues.Filters],
-                    Tabs: state.sortValues.Tabs.map(item => {
-                        if (action.name === item.name) {
-                            return {
-                                name: item.name,
-                                value: true,
-                            }
-                        }
-                        else {
-                            return {
-                                name: item.name,
-                                value: false,
-                            }
-                        }
-                    }),
-                }
-            }
-            return newState;
-        }
         case SORT_TICKETS: {
             let selectedStops = [];
             state.sortValues.Filters.forEach(item => {
@@ -178,13 +70,13 @@ const ticketReducer = (state = initialState, action) => {
                     numTicket++;
                     return newTicket;
                 }),
-                sortValues: {
-                    Filters: [...state.sortValues.Filters],
-                    Tabs: [...state.sortValues.Tabs],
-                },
                 addTicketsButton: {
                     numTickets: numTicket < 5 ? numTicket : 5,
                     disabled: false,
+                },
+                sortValues: {
+                    Filters: [...state.sortValues.Filters],
+                    Tabs: [...state.sortValues.Tabs],
                 }
             }
 
@@ -192,13 +84,13 @@ const ticketReducer = (state = initialState, action) => {
                 newState.addTicketsButton.disabled = true;
             }
 
-            if (newState.sortValues.Tabs[0].value === true) {
+            if (state.sortValues.Tabs[0].value === true) {
                 function byFieldPrice() {
                     return (a, b) => a.price > b.price ? 1 : -1;
                 }
                 newState.sortedTickets.sort(byFieldPrice());
             }
-            else if (newState.sortValues.Tabs[1].value === true) {
+            else if (state.sortValues.Tabs[1].value === true) {
                 function byFieldSpeed() {
                     return (a, b) => {
                         let durationA = a.segments.reduce((sum, item) => sum + item.duration, 0);
@@ -208,7 +100,7 @@ const ticketReducer = (state = initialState, action) => {
                 }
                 newState.sortedTickets.sort(byFieldSpeed());
             }
-            else if (newState.sortValues.Tabs[2].value === true) {
+            else if (state.sortValues.Tabs[2].value === true) {
                 function optimalSort() {
                     return (a, b) => {
                         return a.weight > b.weight ? 1 : -1
@@ -258,7 +150,7 @@ const ticketReducer = (state = initialState, action) => {
                 sortValues: {
                     Filters: [...state.sortValues.Filters],
                     Tabs: [...state.sortValues.Tabs],
-                },
+                }
             }
             return newState;
         }
@@ -291,13 +183,121 @@ const ticketReducer = (state = initialState, action) => {
                         })
                     }
                 }),
-                sortValues: {
-                    Filters: [...state.sortValues.Filters],
-                    Tabs: [...state.sortValues.Tabs],
-                },
                 addTicketsButton: {
                     numTickets: newNumTickets,
                     disabled: disabledFlag,
+                },
+                sortValues: {
+                    Filters: [...state.sortValues.Filters],
+                    Tabs: [...state.sortValues.Tabs],
+                }
+            }
+            return newState;
+        }
+        case CHANGE_CHECKBOX: {
+            let newFilters = [];
+            if (action.name === "Все") {
+                let newValue = !state.sortValues.Filters[0].value;
+                newFilters = state.sortValues.Filters.map(elem => {
+                    return {
+                        name: elem.name,
+                        value: newValue,
+                        number: elem.number,
+                    }
+                });
+            }
+            else {
+                let isAllChoice = true;
+                newFilters = state.sortValues.Filters.map(elem => {
+                    let newValue = action.name === elem.name ? !elem.value : elem.value;
+                    if (elem.name !== "Все") {
+                        if (newValue === false)
+                            isAllChoice = false;
+                    }
+                    return {
+                        name: elem.name,
+                        value: newValue,
+                        number: elem.number,
+                    }
+                });
+                newFilters[0].value = isAllChoice;
+            }
+
+            let newState = {
+                ...state,
+                tickets: state.tickets.map(ticket => {
+                    return {
+                        ...ticket,
+                        segments: ticket.segments.map(seg => {
+                            return {
+                                ...seg,
+                                stops: [...seg.stops],
+                            }
+                        })
+                    }
+                }),
+                sortedTickets: state.sortedTickets.map(ticket => {
+                    return {
+                        ...ticket,
+                        segments: ticket.segments.map(seg => {
+                            return {
+                                ...seg,
+                                stops: [...seg.stops],
+                            }
+                        })
+                    }
+                }),
+                ...state.addTicketsButton,
+                sortValues: {
+                    Filters: [...newFilters],
+                    Tabs: [...state.sortValues.Tabs],
+                }
+            }
+
+            return newState;
+        }
+        case CLICK_TABS: {
+            let newState = {
+                ...state,
+                tickets: state.tickets.map(ticket => {
+                    return {
+                        ...ticket,
+                        segments: ticket.segments.map(seg => {
+                            return {
+                                ...seg,
+                                stops: [...seg.stops],
+                            }
+                        })
+                    }
+                }),
+                sortedTickets: state.sortedTickets.map(ticket => {
+                    return {
+                        ...ticket,
+                        segments: ticket.segments.map(seg => {
+                            return {
+                                ...seg,
+                                stops: [...seg.stops],
+                            }
+                        })
+                    }
+                }),
+                ...state.addTicketsButton,
+                sortValues: {
+                    Filters: [...state.sortValues.Filters],
+                    Tabs: state.sortValues.Tabs.map(item => {
+                        if (action.name === item.name) {
+                            return {
+                                name: item.name,
+                                value: true,
+                            }
+                        }
+                        else {
+                            return {
+                                name: item.name,
+                                value: false,
+                            }
+                        }
+                    }),
                 }
             }
             return newState;
@@ -308,15 +308,16 @@ const ticketReducer = (state = initialState, action) => {
     }
 }
 
-export const onChangeCheckbox = (name) => ({ type: CHANGE_CHECKBOX, name });
-export const onClickTabs = (name) => ({ type: CLICK_TABS, name });
 export const sortTickets = () => ({ type: SORT_TICKETS });
 export const aggregateTickets = (tickets) => ({ type: GET_TICKETS, tickets });
 export const showMoreTickets = () => ({ type: SHOW_MORE_TICKETS });
+export const onChangeCheckbox = (name) => ({ type: CHANGE_CHECKBOX, name });
+export const onClickTabs = (name) => ({ type: CLICK_TABS, name });
+
 export const getTickets = (props) => {
     return (dispatch) => {
         initSearchTickets(props);
-                
+
         async function initSearchTickets(props) {
             let searchResponse = await fetch("https://front-test.beta.aviasales.ru/search");
 
@@ -328,10 +329,10 @@ export const getTickets = (props) => {
                 await getChunkOfTickets(searchData, props);
             }
         }
-    
+
         async function getChunkOfTickets(searchData, props) {
             let ticketsResponse = await fetch("https://front-test.beta.aviasales.ru/tickets?searchId=" + searchData.searchId);
-        
+
             if (ticketsResponse.status !== 200) {
                 await getChunkOfTickets(searchData, props);
             }

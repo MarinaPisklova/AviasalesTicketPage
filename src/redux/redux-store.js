@@ -3,7 +3,7 @@ import thunk from 'redux-thunk';
 import ticketReducer from "./ticket-reducer";
 
 let reducers = combineReducers({
-    ticketPage: ticketReducer, 
+    ticketPage: ticketReducer,
 })
 
 let store = createStore(reducers, applyMiddleware(thunk));

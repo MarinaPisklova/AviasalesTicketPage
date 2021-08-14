@@ -18,6 +18,7 @@ let mapStateToProps = (state) => {
     return {
         addTicketsButton: state.ticketPage.addTicketsButton,
         tickets: state.ticketPage.sortedTickets,
+        sortValues: state.ticketPage.sortValues,
     }
 }
 
