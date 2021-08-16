@@ -1,3 +1,5 @@
+import { getSearchResponse, getTicketsResponse } from "../api/api"
+
 const SORT_TICKETS = "SORT_TICKETS";
 const GET_TICKETS = "GET_TICKETS";
 const SHOW_MORE_TICKETS = "SHOW_MORE_TICKETS";
@@ -319,7 +321,7 @@ export const getTickets = (props) => {
         initSearchTickets(props);
 
         async function initSearchTickets(props) {
-            let searchResponse = await fetch("https://front-test.beta.aviasales.ru/search");
+            let searchResponse = await getSearchResponse();
 
             if (searchResponse.status !== 200) {
                 await initSearchTickets();
@@ -331,7 +333,7 @@ export const getTickets = (props) => {
         }
 
         async function getChunkOfTickets(searchData, props) {
-            let ticketsResponse = await fetch("https://front-test.beta.aviasales.ru/tickets?searchId=" + searchData.searchId);
+            let ticketsResponse = await getTicketsResponse(searchData.searchId);
 
             if (ticketsResponse.status !== 200) {
                 await getChunkOfTickets(searchData, props);
