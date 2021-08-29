@@ -1,0 +1,12 @@
+.header{
+    &__title{
+        margin: 0;
+        padding: 10px;
+        color: white;
+        text-align: center;
+        align-items: center;
+        border-bottom: 4px solid rgb(50, 49, 49);
+        font-size: 20px;
+        cursor:default;
+    }
+}

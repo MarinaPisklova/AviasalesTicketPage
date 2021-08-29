@@ -1,0 +1,24 @@
+.clock{
+    padding: 20px 0;
+    text-align: center;
+    color: white;
+    cursor:default;
+
+    &__weekday{
+        font-weight: bold;
+        font-size: 20px;
+    }
+
+    &__date{
+        font-weight: bold;
+        font-size: 14px;
+        color: rgb(150, 150, 150);
+    }
+
+    &__time{
+        font-weight: bold;
+        font-size: 14px;
+        color: rgb(150, 150, 150);
+        padding-bottom: 10px;
+    }
+}
