@@ -1,0 +1,37 @@
+@import "../../../scss/variables";
+
+.tab{
+    width: 168px;
+    height: 50px;
+    @extend %set_center;
+    background: #FFFFFF;
+    border: 1px solid #DFE5EC;
+    box-sizing: border-box;
+    cursor: url("../../../images/Cursor.svg") 0 0, auto;
+
+    &__name{
+        @extend %title_style;
+        font-weight: 600;
+        font-size: 12px;
+        line-height: 20px;
+        color: $text_dark;
+
+        &_active{
+            color: white;
+        }
+    }
+
+    &_active{
+        background: $color_blue;
+    }
+}
+
+.tab:last-child{
+    border-bottom-right-radius: 5px;
+    border-top-right-radius: 5px;
+}
+
+.tab:first-child{
+    border-bottom-left-radius: 5px;
+    border-top-left-radius: 5px;
+}
