@@ -1,4 +1,5 @@
 import { getSearchResponse, getTicketsResponse } from "../api/api"
+import { getSortedTickets } from './../js/sort';
 
 const SORT_TICKETS = "SORT_TICKETS";
 const GET_TICKETS = "GET_TICKETS";
@@ -32,169 +33,44 @@ let initialState = {
 const ticketReducer = (state = initialState, action) => {
     switch (action.type) {
         case SORT_TICKETS: {
-            let selectedStops = [];
-            state.sortValues.Filters.forEach(item => {
-                if (item.value) {
-                    selectedStops.push(item.number);
-                }
-            })
+            let newSortedTickets = getSortedTickets(state.tickets, state.sortValues);
+            let newAddTicketsButton = {
+                numTickets: newSortedTickets.length < 5 ? newSortedTickets.length : 5,
+                disabled: false,
+            };
 
-            let numTicket = 0;
-            let newState = {
-                ...state,
-                tickets: state.tickets.map(item => {
-                    return {
-                        ...item,
-                        segments: item.segments.map(seg => {
-                            return {
-                                ...seg,
-                                stops: seg.stops.slice(),
-                            }
-                        })
-                    }
-                }),
-                sortedTickets: state.tickets.filter(ticket => {
-                    let numStops = [];
-                    ticket.segments.forEach(seg => { numStops.push([...seg.stops].length); });
-
-                    var innerJoin = numStops.filter(el => { return selectedStops.includes(el) });
-                    return innerJoin.length ? true : false;
-                }).map(ticket => {
-                    let newTicket = {
-                        ...ticket,
-                        segments: ticket.segments.map(seg => {
-                            return {
-                                ...seg,
-                                stops: [...seg.stops],
-                            }
-                        })
-                    };
-                    numTicket++;
-                    return newTicket;
-                }),
-                addTicketsButton: {
-                    numTickets: numTicket < 5 ? numTicket : 5,
-                    disabled: false,
-                },
-                sortValues: {
-                    Filters: [...state.sortValues.Filters],
-                    Tabs: [...state.sortValues.Tabs],
-                }
+            if (newAddTicketsButton.numTickets === newSortedTickets.length) {
+                newAddTicketsButton.disabled = true;
             }
 
-            if (newState.addTicketsButton.numTickets === newState.tickets.length) {
-                newState.addTicketsButton.disabled = true;
-            }
-
-            if (state.sortValues.Tabs[0].value === true) {
-                function byFieldPrice() {
-                    return (a, b) => a.price > b.price ? 1 : -1;
-                }
-                newState.sortedTickets.sort(byFieldPrice());
-            }
-            else if (state.sortValues.Tabs[1].value === true) {
-                function byFieldSpeed() {
-                    return (a, b) => {
-                        let durationA = a.segments.reduce((sum, item) => sum + item.duration, 0);
-                        let durationB = b.segments.reduce((sum, item) => sum + item.duration, 0);
-                        return durationA > durationB ? 1 : -1
-                    };
-                }
-                newState.sortedTickets.sort(byFieldSpeed());
-            }
-            else if (state.sortValues.Tabs[2].value === true) {
-                function optimalSort() {
-                    return (a, b) => {
-                        return a.weight > b.weight ? 1 : -1
-                    };
-                }
-
-                //Find min of price and duration
-                let minPrice = Infinity, minDuration = Infinity;
-                (function () {
-                    newState.sortedTickets.forEach(ticket => {
-                        let sumDuration = ticket.segments.reduce((sum, item) => sum + item.duration, 0);
-                        minDuration = sumDuration < minDuration ? sumDuration : minDuration;
-                        minPrice = ticket.price < minPrice ? ticket.price : minPrice;
-                    });
-                }());
-
-                //calc optimal weight
-                newState.sortedTickets.forEach(ticket => {
-                    let sumDuration = ticket.segments.reduce((sum, item) => sum + item.duration, 0);
-                    ticket.weight = ticket.price / minPrice + sumDuration / minDuration;
-                })
-
-                newState.sortedTickets.sort(optimalSort());
-                newState.sortedTickets.forEach(ticket => {
-                    delete ticket.weight;
-                });
-            }
-
-            return newState;
+            return Object.assign({}, state, { sortedTickets: newSortedTickets, addTicketsButton: newAddTicketsButton });
         }
         case GET_TICKETS: {
-            let newState = {
-                ...state,
-                ...state.addTicketsButton,
-                tickets: [...state.tickets, ...action.tickets.map(item => {
-                    return {
-                        ...item,
-                        segments: item.segments.map(seg => {
-                            return {
-                                ...seg,
-                                stops: [...seg.stops],
-                            }
-                        })
-                    }
-                })],
-                sortedTickets: [...state.sortedTickets],
-                sortValues: {
-                    Filters: [...state.sortValues.Filters],
-                    Tabs: [...state.sortValues.Tabs],
+            let newTickets = [...state.tickets, ...action.tickets.map(item => {
+                return {
+                    ...item,
+                    segments: item.segments.map(seg => {
+                        return {
+                            ...seg,
+                            stops: [...seg.stops],
+                        }
+                    })
                 }
-            }
-            return newState;
+            })];
+
+            return Object.assign({}, state, { tickets: newTickets });
         }
         case SHOW_MORE_TICKETS: {
             let newNumTickets = state.addTicketsButton.numTickets + 5;
             newNumTickets = newNumTickets > state.tickets.length ? newNumTickets = state.tickets.length : newNumTickets;
             let disabledFlag = newNumTickets === state.tickets.length ? true : false;
 
-            let newState = {
-                ...state,
-                tickets: state.tickets.map(ticket => {
-                    return {
-                        ...ticket,
-                        segments: ticket.segments.map(seg => {
-                            return {
-                                ...seg,
-                                stops: [...seg.stops],
-                            }
-                        })
-                    }
-                }),
-                sortedTickets: state.sortedTickets.map(ticket => {
-                    return {
-                        ...ticket,
-                        segments: ticket.segments.map(seg => {
-                            return {
-                                ...seg,
-                                stops: [...seg.stops],
-                            }
-                        })
-                    }
-                }),
-                addTicketsButton: {
-                    numTickets: newNumTickets,
-                    disabled: disabledFlag,
-                },
-                sortValues: {
-                    Filters: [...state.sortValues.Filters],
-                    Tabs: [...state.sortValues.Tabs],
-                }
+            let newAddTicketsButton = {
+                numTickets: newNumTickets,
+                disabled: disabledFlag,
             }
-            return newState;
+
+            return Object.assign({}, state, { addTicketsButton: newAddTicketsButton });
         }
         case CHANGE_CHECKBOX: {
             let newFilters = [];
@@ -225,84 +101,41 @@ const ticketReducer = (state = initialState, action) => {
                 newFilters[0].value = isAllChoice;
             }
 
-            let newState = {
-                ...state,
-                tickets: state.tickets.map(ticket => {
-                    return {
-                        ...ticket,
-                        segments: ticket.segments.map(seg => {
-                            return {
-                                ...seg,
-                                stops: [...seg.stops],
-                            }
-                        })
-                    }
-                }),
-                sortedTickets: state.sortedTickets.map(ticket => {
-                    return {
-                        ...ticket,
-                        segments: ticket.segments.map(seg => {
-                            return {
-                                ...seg,
-                                stops: [...seg.stops],
-                            }
-                        })
-                    }
-                }),
-                ...state.addTicketsButton,
-                sortValues: {
-                    Filters: [...newFilters],
-                    Tabs: [...state.sortValues.Tabs],
-                }
+            let newSortValues = Object.assign({}, state.sortValues, { Filters: newFilters });
+            let newSortedTickets = getSortedTickets(state.tickets, newSortValues);
+            let newAddTicketsButton = {
+                numTickets: newSortedTickets.length < 5 ? newSortedTickets.length : 5,
+                disabled: false,
+            };
+
+            if (newAddTicketsButton.numTickets === newSortedTickets.length) {
+                newAddTicketsButton.disabled = true;
             }
 
-            return newState;
+            return Object.assign({}, state, { sortValues: newSortValues, sortedTickets: newSortedTickets, addTicketsButton: newAddTicketsButton });
         }
         case CLICK_TABS: {
-            let newState = {
-                ...state,
-                tickets: state.tickets.map(ticket => {
-                    return {
-                        ...ticket,
-                        segments: ticket.segments.map(seg => {
-                            return {
-                                ...seg,
-                                stops: [...seg.stops],
-                            }
-                        })
-                    }
-                }),
-                sortedTickets: state.sortedTickets.map(ticket => {
-                    return {
-                        ...ticket,
-                        segments: ticket.segments.map(seg => {
-                            return {
-                                ...seg,
-                                stops: [...seg.stops],
-                            }
-                        })
-                    }
-                }),
-                ...state.addTicketsButton,
-                sortValues: {
-                    Filters: [...state.sortValues.Filters],
-                    Tabs: state.sortValues.Tabs.map(item => {
-                        if (action.name === item.name) {
-                            return {
-                                name: item.name,
-                                value: true,
-                            }
-                        }
-                        else {
-                            return {
-                                name: item.name,
-                                value: false,
-                            }
-                        }
-                    }),
+            let newTabs = state.sortValues.Tabs.map(item => {
+                let newValue = action.name === item.name;
+
+                return {
+                    name: item.name,
+                    value: newValue,
                 }
+            });
+
+            let newSortValues = Object.assign({}, state.sortValues, { Tabs: newTabs });
+            let newSortedTickets = getSortedTickets(state.tickets, newSortValues);
+            let newAddTicketsButton = {
+                numTickets: newSortedTickets.length < 5 ? newSortedTickets.length : 5,
+                disabled: false,
+            };
+
+            if (newAddTicketsButton.numTickets === newSortedTickets.length) {
+                newAddTicketsButton.disabled = true;
             }
-            return newState;
+
+            return Object.assign({}, state, { sortValues: newSortValues, sortedTickets: newSortedTickets, addTicketsButton: newAddTicketsButton });
         }
         default: {
             return state;

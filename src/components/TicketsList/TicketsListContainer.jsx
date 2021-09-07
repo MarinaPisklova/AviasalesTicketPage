@@ -2,7 +2,7 @@ import React from "react";
 import { connect } from "react-redux"
 import TicketsList from './TicketsList';
 import Preloader from "../Preloader/Preloader";
-import { sortTickets, aggregateTickets, showMoreTickets, getTickets } from "../../redux/ticket-reducer";
+import { showMoreTickets, getTickets } from "../../redux/ticket-reducer";
 
 class TicketsListContainer extends React.Component {
     componentDidMount() {
@@ -22,4 +22,4 @@ let mapStateToProps = (state) => {
     }
 }
 
-export default connect(mapStateToProps, { sortTickets, aggregateTickets, showMoreTickets, getTickets })(TicketsListContainer);
+export default connect(mapStateToProps, { showMoreTickets, getTickets })(TicketsListContainer);

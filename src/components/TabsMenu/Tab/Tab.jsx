@@ -3,7 +3,6 @@ import style from "./Tab.module.scss"
 const Tab = (props) => {
     const onClickTab = () => {
         props.onClick(props.name);
-        props.onSortFunc();
     }
 
     return (

@@ -1,6 +1,6 @@
 import style from "./Ticket.module.scss"
 import TicketSegment from "./TicketSegment/TicketSegment"
-//
+
 const Ticket = (props) => {
     let SegmentsList = props.ticket.segments.map((segment, index) => <TicketSegment key={index} segment={segment} />)
 
